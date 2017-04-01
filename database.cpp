@@ -171,19 +171,34 @@ unsigned int  Database::getNoFeatures()
 	return noFeatures;
 }
 
-
 void Database::train(int trainPartPercent)
 {
+    testSet.clear();
+    trainSet.clear();
+    shuffledObjects.clear();
     qDebug() << objects.size();
     int trainPart=(objects.size()*trainPartPercent)/100;
     qDebug() << trainPart;
 
-        std::copy( objects.begin(), objects.end(), shuffledObjects.begin());
-        //auto engine = std::default_random_engine{};
-        //std::shuffle(std::begin(shuffledObjects), std::end(shuffledObjects), engine);
-//    int trainPart=(shuffledObjects.size()*trainPartPercent)/100;
+    for(int i=0; i< objects.size(); i++)
+    {
+            shuffledObjects.push_back(objects[i]);
+    }
+        //std::copy( objects.begin(), objects.end(), shuffledObjects.begin());
+     auto engine = std::default_random_engine{};
+      std::shuffle(std::begin(shuffledObjects), std::end(shuffledObjects), engine);
 //    std::copy( shuffledObjects.begin(), shuffledObjects.begin()+trainPart, trainSet.begin());
+    for(int i=0; i< trainPart; i++)
+    {
+            trainSet.push_back(shuffledObjects[i]);
+    }
+    qDebug() << "trainset"<<trainSet.size();
 //    std::copy( shuffledObjects.begin()+trainPart, shuffledObjects.end(), testSet.begin());
+    for(int i=trainPart; i< shuffledObjects.size(); i++)
+    {
+            testSet.push_back(shuffledObjects[i]);
+    }
+    qDebug() << "trainset"<<testSet.size();
 }
 
 
