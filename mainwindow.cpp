@@ -7,8 +7,6 @@
 #include <QImage>
 #include <QDebug>
 
-
-
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -169,8 +167,8 @@ void MainWindow::on_CpushButtonTrain_clicked()
                 shuffledObjects.push_back(database.getObjects()[i]);
         }
     //        //std::copy( objects.begin(), objects.end(), shuffledObjects.begin());
-         auto engine = std::default_random_engine{};
-          std::shuffle(std::begin(shuffledObjects), std::end(shuffledObjects), engine);
+        auto engine = std::default_random_engine{};
+        std::shuffle(std::begin(shuffledObjects), std::end(shuffledObjects), engine);
     //    std::copy( shuffledObjects.begin(), shuffledObjects.begin()+trainPart, trainSet.begin());
         for(int i=0; i< trainPart; i++)
         {
@@ -193,5 +191,45 @@ void MainWindow::on_CpushButtonTrain_clicked()
 
 void MainWindow::on_CpushButtonExecute_clicked()
 {
+    std::string classifier=ui->CcomboBoxClassifiers->currentText().toStdString();
+    //qDebug() << database.getNoFeatures();
+    if(classifier=="NN"){
+        computeNN();
+    }
+    else if(classifier=="NM"){
 
+    }
+    else if(classifier=="kNN"){
+
+    }
+    else if(classifier=="kNM"){
+
+    }
+}
+
+void MainWindow::computeNN(){
+    int correct=0;
+    for (auto &test : testSet)
+        {
+            float minDist=100;
+            std::string cClass;
+            for (auto &train : trainSet)
+                {
+                    float distance=0;
+                    for(uint i=0;i<database.getNoFeatures();i++){
+                        distance+=(test.getFeatures()[i]-train.getFeatures()[i])*(test.getFeatures()[i]-train.getFeatures()[i]);
+                    }
+                    distance=sqrt(distance);
+                    if(distance<minDist){
+                        minDist=distance;
+                        cClass=train.getClassName();
+                    }
+                }
+            if(cClass==test.getClassName()){
+                correct++;
+            }
+        }
+     ui->CtextBrowser->append("Correct: "+QString::number(correct));
+     ui->CtextBrowser->append("Incorrect: "+QString::number(testSet.size()-correct));
+     ui->CtextBrowser->append("Classifier efficiency: "+QString::number(correct/testSet.size()*100));
 }

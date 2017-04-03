@@ -15,9 +15,9 @@ private:
 	std::vector<std::string> classNamesVector;
     std::vector<unsigned int> featuresIDs;
 
-    unsigned int noClass;
-    unsigned int noObjects;
-    unsigned int noFeatures;
+    unsigned int noClass;  //liczba klas
+    unsigned int noObjects; //liczba obiektów
+    unsigned int noFeatures;  //liczba cech
 
 public:
 
