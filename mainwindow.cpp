@@ -2,7 +2,8 @@
 #include "ui_mainwindow.h"
 
 
-
+#include <algorithm>
+#include <random>
 #include <QImage>
 #include <QDebug>
 
@@ -151,8 +152,43 @@ void MainWindow::on_CpushButtonSaveFile_clicked()
 void MainWindow::on_CpushButtonTrain_clicked()
 {
     int partValue=ui->CplainTextEditTrainingPart->toPlainText().toInt(); //wartość pobrana z formularza, do dzielenia setu
-    //qDebug() << ui->CplainTextEditTrainingPart->toPlainText();
-    database.train(partValue);
+    if(partValue>=100 || partValue<=0){
+        ui->CtextBrowser->append("Błąd");
+    }
+    else{
+        ui->CtextBrowser->append("Part: "+QString::number(partValue));
+        testSet.clear();
+        trainSet.clear();
+        shuffledObjects.clear();
+    //    //qDebug() << objects.size();
+        int trainPart=(database.getObjects().size()*partValue)/100;
+    //    //qDebug() << trainPart;
+
+        for(int i=0; i< database.getObjects().size(); i++)
+        {
+                shuffledObjects.push_back(database.getObjects()[i]);
+        }
+    //        //std::copy( objects.begin(), objects.end(), shuffledObjects.begin());
+         auto engine = std::default_random_engine{};
+          std::shuffle(std::begin(shuffledObjects), std::end(shuffledObjects), engine);
+    //    std::copy( shuffledObjects.begin(), shuffledObjects.begin()+trainPart, trainSet.begin());
+        for(int i=0; i< trainPart; i++)
+        {
+                trainSet.push_back(shuffledObjects[i]);
+        }
+
+    //    qDebug() << "trainset"<<trainSet.size();
+    //    std::copy( shuffledObjects.begin()+trainPart, shuffledObjects.end(), testSet.begin());
+        for(int i=trainPart; i< shuffledObjects.size(); i++)
+        {
+                testSet.push_back(shuffledObjects[i]);
+        }
+
+        ui->CtextBrowser->append("TrainSet: "+QString::number(trainSet.size()));
+        ui->CtextBrowser->append("TestSet: "+QString::number(testSet.size()));
+    //    qDebug() << "trainset"<<testSet.size();
+    }
+
 }
 
 void MainWindow::on_CpushButtonExecute_clicked()

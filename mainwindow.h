@@ -57,6 +57,9 @@ private:
 
 private:
      Database database;
+     std::vector<Object> shuffledObjects;
+     std::vector<Object> trainSet;
+     std::vector<Object> testSet;
 };
 
 #endif // MAINWINDOW_H
