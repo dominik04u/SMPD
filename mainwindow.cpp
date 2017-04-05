@@ -179,7 +179,7 @@ void MainWindow::on_CpushButtonTrain_clicked()
     //    std::copy( shuffledObjects.begin()+trainPart, shuffledObjects.end(), testSet.begin());
         for(int i=trainPart; i< shuffledObjects.size(); i++)
         {
-                testSet.push_back(shuffledObjects[i]);
+                testSet.push_back(shuffledObjects[i]); 
         }
 
         ui->CtextBrowser->append("TrainSet: "+QString::number(trainSet.size()));
@@ -208,11 +208,11 @@ void MainWindow::on_CpushButtonExecute_clicked()
 }
 
 void MainWindow::computeNN(){
-    int correct=0;
+    int correct=0,incorrect=0;
     for (auto &test : testSet)
         {
-            float minDist=100;
-            std::string cClass;
+            float minDist=10000;
+            std::string cClass="";
             for (auto &train : trainSet)
                 {
                     float distance=0;
@@ -228,8 +228,11 @@ void MainWindow::computeNN(){
             if(cClass==test.getClassName()){
                 correct++;
             }
+            else{
+                incorrect++;
+            }
         }
      ui->CtextBrowser->append("Correct: "+QString::number(correct));
-     ui->CtextBrowser->append("Incorrect: "+QString::number(testSet.size()-correct));
-     ui->CtextBrowser->append("Classifier efficiency: "+QString::number(correct/testSet.size()*100));
+     ui->CtextBrowser->append("Incorrect: "+QString::number(incorrect));
+     ui->CtextBrowser->append("Classifier efficiency: "+QString::number(float(correct) / float(testSet.size())*100));
 }
