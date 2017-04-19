@@ -1,11 +1,13 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-
+#include <iostream>
+#include <fstream>
 #include <algorithm>
 #include <random>
 #include <QImage>
 #include <QDebug>
+
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -167,7 +169,8 @@ void MainWindow::on_CpushButtonTrain_clicked()
                 shuffledObjects.push_back(database.getObjects()[i]);
         }
     //        //std::copy( objects.begin(), objects.end(), shuffledObjects.begin());
-        auto engine = std::default_random_engine{};
+        std::random_device rd;
+        std::default_random_engine engine(rd());
         std::shuffle(std::begin(shuffledObjects), std::end(shuffledObjects), engine);
     //    std::copy( shuffledObjects.begin(), shuffledObjects.begin()+trainPart, trainSet.begin());
         for(int i=0; i< trainPart; i++)
@@ -194,45 +197,143 @@ void MainWindow::on_CpushButtonExecute_clicked()
     std::string classifier=ui->CcomboBoxClassifiers->currentText().toStdString();
     //qDebug() << database.getNoFeatures();
     if(classifier=="NN"){
-        computeNN();
+        computeNN(1);
     }
     else if(classifier=="NM"){
-
+         computeNM();
     }
     else if(classifier=="kNN"){
-
+        int k=ui->CcomboBoxK->currentText().toInt();
+        computeNN(k);
     }
     else if(classifier=="kNM"){
 
     }
 }
 
-void MainWindow::computeNN(){
+//void MainWindow::computeNN(){
+//    int correct=0,incorrect=0;
+//    for (auto &test : testSet)
+//        {
+//            float minDist=10000;
+//            std::string cClass="";
+//            for (auto &train : trainSet)
+//                {
+//                    float distance=0;
+//                    for(uint i=0;i<database.getNoFeatures();i++){
+//                        distance+=(test.getFeatures()[i]-train.getFeatures()[i])*(test.getFeatures()[i]-train.getFeatures()[i]);
+//                    }
+//                    distance=sqrt(distance);
+//                    if(distance<minDist){
+//                        minDist=distance;
+//                        cClass=train.getClassName();
+//                    }
+//                }
+//            if(cClass==test.getClassName()){
+//                correct++;
+//            }
+//            else{
+//                incorrect++;
+//            }
+//        }
+//     ui->CtextBrowser->append("Correct: "+QString::number(correct));
+//     ui->CtextBrowser->append("Incorrect: "+QString::number(incorrect));
+//     ui->CtextBrowser->append("Classifier efficiency: "+QString::number(float(correct) / float(testSet.size())*100));
+//}
+
+void MainWindow::computeNN(int k){
     int correct=0,incorrect=0;
-    for (auto &test : testSet)
-        {
-            float minDist=10000;
-            std::string cClass="";
-            for (auto &train : trainSet)
-                {
-                    float distance=0;
-                    for(uint i=0;i<database.getNoFeatures();i++){
-                        distance+=(test.getFeatures()[i]-train.getFeatures()[i])*(test.getFeatures()[i]-train.getFeatures()[i]);
-                    }
-                    distance=sqrt(distance);
-                    if(distance<minDist){
-                        minDist=distance;
-                        cClass=train.getClassName();
-                    }
-                }
-            if(cClass==test.getClassName()){
-                correct++;
-            }
-            else{
-                incorrect++;
-            }
-        }
+     for (auto &test : testSet){
+         float distance = 0;
+         std::vector<std::pair<std::string,float>> distances;
+         std::string cClass="";
+         for (auto &train : trainSet)
+             {
+                 distance=0;
+                 for(uint i=0;i<database.getNoFeatures();i++){
+                     distance+=(test.getFeatures()[i]-train.getFeatures()[i])*(test.getFeatures()[i]-train.getFeatures()[i]);
+                 }
+                 distances.push_back(make_pair(train.getClassName(), sqrt(distance)));
+             }
+         sort(distances.begin(),distances.end(),[](std::pair<std::string, float> v1, std::pair<std::string, float> v2) { return v1.second < v2.second; });
+
+         std::map<std::string,int> minDist;
+         int i=0;
+
+         for(auto const &it:distances){
+             minDist[it.first]+=1;
+             i++;
+             if(i==k)
+                 break;
+         }
+             int coutner=0;
+             for(auto const &it:minDist){
+                 if(coutner<it.second){
+                     coutner=it.second;
+                     cClass=it.first;
+                 }
+             }
+             if(cClass==test.getClassName()){
+                 correct++;
+             }
+             else{
+                 incorrect++;
+             }
+
+     }
+
      ui->CtextBrowser->append("Correct: "+QString::number(correct));
      ui->CtextBrowser->append("Incorrect: "+QString::number(incorrect));
      ui->CtextBrowser->append("Classifier efficiency: "+QString::number(float(correct) / float(testSet.size())*100));
+}
+
+void MainWindow::computeNM(){
+    int correct=0,incorrect=0;
+    int counter=0;
+    std::map<std::string, float[64]> avgs;
+    for(uint i=0;i<database.getNoFeatures();i++){
+       std::map<std::string, int> classCount;
+        for (const auto &train : trainSet){
+            avgs[train.getClassName()][i]+=train.getFeatures()[i];
+            classCount[train.getClassName()]++;
+            counter++;
+        }
+        for(const auto &it:avgs){
+            avgs[it.first][i]/=classCount[it.first];
+            counter++;
+        }
+    }
+    for (auto &test : testSet){
+        std::map<std::string,float> distance;
+        float minDist=1000;
+        std::string cClass;
+        for(uint i=0;i<database.getNoFeatures();i++){
+            for(const auto &it:avgs){
+                distance[it.first]=(avgs[it.first][i]-test.getFeatures()[i])*(avgs[it.first][i]-test.getFeatures()[i]);
+                counter++;
+            }
+        }
+        for(const auto &it:distance){
+            counter++;
+            distance[it.first]=sqrt(distance[it.first]);
+            if(minDist>distance[it.first]){
+                minDist=distance[it.first];
+                cClass=it.first;
+            }
+        }
+        if(cClass==test.getClassName()){
+            correct++;
+        }
+        else{
+            incorrect++;
+        }
+    }
+    ui->CtextBrowser->append("Correct: "+QString::number(correct));
+    ui->CtextBrowser->append("Incorrect: "+QString::number(incorrect));
+    ui->CtextBrowser->append("Classifier efficiency: "+QString::number(float(correct) / float(testSet.size())*100));
+}
+
+void MainWindow::on_CpushButtonClear_clicked()
+{
+     ui->CtextBrowser->clear();
 }

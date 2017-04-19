@@ -52,7 +52,10 @@ private slots:
 
     void on_CpushButtonExecute_clicked();
 
-    void computeNN();
+    void computeNN(int k);
+    void computeNM();
+
+    void on_CpushButtonClear_clicked();
 
 private:
     Ui::MainWindow *ui;
