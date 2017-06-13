@@ -197,51 +197,51 @@ void MainWindow::on_CpushButtonExecute_clicked()
     std::string classifier=ui->CcomboBoxClassifiers->currentText().toStdString();
     //qDebug() << database.getNoFeatures();
     if(classifier=="NN"){
-        computeNN(1);
+        computeNN();
     }
     else if(classifier=="NM"){
          computeNM();
     }
     else if(classifier=="kNN"){
         int k=ui->CcomboBoxK->currentText().toInt();
-        computeNN(k);
+        computekNN(k);
     }
     else if(classifier=="kNM"){
 
     }
 }
 
-//void MainWindow::computeNN(){
-//    int correct=0,incorrect=0;
-//    for (auto &test : testSet)
-//        {
-//            float minDist=10000;
-//            std::string cClass="";
-//            for (auto &train : trainSet)
-//                {
-//                    float distance=0;
-//                    for(uint i=0;i<database.getNoFeatures();i++){
-//                        distance+=(test.getFeatures()[i]-train.getFeatures()[i])*(test.getFeatures()[i]-train.getFeatures()[i]);
-//                    }
-//                    distance=sqrt(distance);
-//                    if(distance<minDist){
-//                        minDist=distance;
-//                        cClass=train.getClassName();
-//                    }
-//                }
-//            if(cClass==test.getClassName()){
-//                correct++;
-//            }
-//            else{
-//                incorrect++;
-//            }
-//        }
-//     ui->CtextBrowser->append("Correct: "+QString::number(correct));
-//     ui->CtextBrowser->append("Incorrect: "+QString::number(incorrect));
-//     ui->CtextBrowser->append("Classifier efficiency: "+QString::number(float(correct) / float(testSet.size())*100));
-//}
+void MainWindow::computeNN(){
+    int correct=0,incorrect=0;
+    for (auto &test : testSet)
+        {
+            float minDist=10000;
+            std::string cClass="";
+            for (auto &train : trainSet)
+                {
+                    float distance=0;
+                    for(uint i=0;i<database.getNoFeatures();i++){
+                        distance+=(test.getFeatures()[i]-train.getFeatures()[i])*(test.getFeatures()[i]-train.getFeatures()[i]);
+                    }
+                    distance=sqrt(distance);
+                    if(distance<minDist){
+                        minDist=distance;
+                        cClass=train.getClassName();
+                    }
+                }
+            if(cClass==test.getClassName()){
+                correct++;
+            }
+            else{
+                incorrect++;
+            }
+        }
+     ui->CtextBrowser->append("Correct: "+QString::number(correct));
+     ui->CtextBrowser->append("Incorrect: "+QString::number(incorrect));
+     ui->CtextBrowser->append("Classifier efficiency: "+QString::number(float(correct) / float(testSet.size())*100));
+}
 
-void MainWindow::computeNN(int k){
+void MainWindow::computekNN(int k){
     int correct=0,incorrect=0;
      for (auto &test : testSet){
          float distance = 0;

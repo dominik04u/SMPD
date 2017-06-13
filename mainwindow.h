@@ -52,7 +52,8 @@ private slots:
 
     void on_CpushButtonExecute_clicked();
 
-    void computeNN(int k);
+    void computeNN();
+    void computekNN(int k);
     void computeNM();
 
     void on_CpushButtonClear_clicked();
